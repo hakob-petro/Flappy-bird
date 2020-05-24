@@ -6,6 +6,8 @@ from pygame import *
 from bird import *
 from block import *
 from menu import *
+from background import *
+from enemy import *
 
 WIN_HEIGHT = 450
 WIN_WIDHT = 640
@@ -24,7 +26,7 @@ def level(window, screen):
     b.append(Block(640))
     b.append(Block(840))
     b.append(Block(1040))
-    b.append(Block(1290))
+    b.append(enemy(1290))
     hero.up = True
     while done and not hero.end:
         for e in pygame.event.get():
@@ -35,7 +37,9 @@ def level(window, screen):
             if e.type == KEYDOWN and e.key == K_ESCAPE:
                 done = False
 
-        screen.fill((120, 150, 255))
+        #screen.fill((120, 150, 255))
+        picture = background("bird/back.png", (0,0))
+        picture.draw(screen)
         scores_screen.fill((50, 50, 50))
         hero.update()
         for b1 in b:
@@ -43,8 +47,11 @@ def level(window, screen):
             b1.update(hero)
             b1.draw(screen)
         if b[b_first].x + 50 < 0:
-            b[b_first] = Block(b[b_first - 1].x + 200)
-            b_first = (b_first + 1) % b_len
+            if b_first != 3:
+                b[b_first] = Block(b[b_first - 1].x + 200) 
+            elif b_first == 3:
+                b[b_first] = enemy(b[b_first - 1].x + 200)
+            b_first = (b_first + 1) % b_len   
         hero.draw(screen)
         scores_screen.blit(score_font.render(str(hero.score) + "  Best score: " + str(best_score), 1, (255, 255, 255)), (0, 0))
         window.blit(screen, (0, 50))
