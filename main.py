@@ -3,22 +3,22 @@
 
 import pygame
 from pygame import *
+from pygame import mouse
 from bird import *
 from block import *
 from menu import *
 from background import *
 from enemy import *
-
+from pygame import mouse
 WIN_HEIGHT = 450
 WIN_WIDHT = 640
-
 
 def level(window, screen):
     global best_score
     score_font = pygame.font.Font("fonts/freesansbold.ttf", 50)
     scores_screen = Surface((640, 50))
     done = True
-    hero = Bird(80, 120, "bird/FlappyBird.png")
+    hero = Bird(80, 120, "bird/red_bird_patern.png") #FlappyBird_1.png")
     timer = pygame.time.Clock()
     b = list()
     b_len = 4
@@ -26,32 +26,44 @@ def level(window, screen):
     b.append(Block(640))
     b.append(Block(840))
     b.append(Block(1040))
-    b.append(enemy(1290))
+    b.append(Enemy(1290))
     hero.up = True
+
+    #music
+    pygame.mixer.init()
+    pygame.mixer.pre_init(44100, -16, 1, 600)
+    pygame.mixer.music.load("bird/music/music.ogg")
+    pygame.mixer.music.play(-1)
+    
     while done and not hero.end:
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 done = False
-            if e.type == KEYDOWN and e.key == K_SPACE:
+            if (e.type == KEYDOWN and e.key == K_SPACE) or pygame.mouse.get_pressed() == (1, 0, 0):
                 hero.up = True
+                jump_sound = pygame.mixer.Sound("bird/music/jump.ogg")
+                jump_sound.play()
             if e.type == KEYDOWN and e.key == K_ESCAPE:
                 done = False
 
         #screen.fill((120, 150, 255))
-        picture = background("bird/back.png", (0,0))
+        ground = pygame.image.load("bird/ground.png")
+        screen.blit(ground, (0, 430))
+        picture = Background("bird/background_2.png", (0,0))
         picture.draw(screen)
         scores_screen.fill((50, 50, 50))
         hero.update()
-        for b1 in b:
-            b1.per(hero)
-            b1.update(hero)
-            b1.draw(screen)
+        for barrier in b:
+            barrier.per(hero)
+            barrier.update(hero)
+            barrier.draw(screen)
         if b[b_first].x + 50 < 0:
             if b_first != 3:
                 b[b_first] = Block(b[b_first - 1].x + 200) 
             elif b_first == 3:
-                b[b_first] = enemy(b[b_first - 1].x + 200)
+                b[b_first] = Enemy(b[b_first - 1].x + 200)
             b_first = (b_first + 1) % b_len   
+
         hero.draw(screen)
         scores_screen.blit(score_font.render(str(hero.score) + "  Best score: " + str(best_score), 1, (255, 255, 255)), (0, 0))
         window.blit(screen, (0, 50))
@@ -60,11 +72,19 @@ def level(window, screen):
 
         timer.tick(35)
 
+    if hero.end:
+        pygame.mixer.music.stop()
+    if not hero.end:
+        pygame.mixer.music.play(-1)
+    
     if best_score < hero.score:
         best_score = hero.score
+        win = pygame.mixer.Sound("bird/music/win.ogg")
+        win.play()
+    
     return done
 
-
+ 
 def main():
     pygame.init()
     pygame.font.init()
@@ -77,7 +97,7 @@ def main():
         best_score = int(i)
     print(best_score)
     mainmenu = Menu()
-    while mainmenu.main(window, screen) and level(window, screen):
+    while mainmenu.main(window, screen, "bird/menu.png", "bird/patterns/skeleton/skeleton-animation_00.png") and level(window, screen):
         mainmenu = Menu()
     fin.close()
     fout = open("score.txt", "w")
@@ -88,3 +108,4 @@ def main():
 best_score = 0
 if __name__ == "__main__":
     main()
+
