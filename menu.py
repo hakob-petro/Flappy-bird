@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import pygame
 import sys
-from pygame import *
 from buttons import Button
-from pygame import mouse
+from pygame.sprite import Group, Sprite
+from pygame.font import Font
+from pygame import Surface, event, mouse 
+from pygame import QUIT, KEYDOWN, K_SPACE, K_ESCAPE
+from pygame.image import load
+from pygame.display import update
 
 X_1 = 60
 X_2 = 70
