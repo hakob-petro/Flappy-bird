@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import pygame
-import random
-from pygame import *
+from pygame.sprite import Sprite
+from pygame.image import load
+from pygame import Surface
 
 
 class Background(pygame.sprite.Sprite):
