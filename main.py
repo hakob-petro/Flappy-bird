@@ -1,15 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import pygame
-from pygame import *
-from pygame import mouse
 from bird import *
 from block import *
 from menu import *
 from background import *
 from enemy import *
-from pygame import mouse
+
+from pygame.sprite import Group, Sprite
+from pygame.font import Font
+from pygame import Surface, event, mouse, mixer
+from pygame import QUIT, KEYDOWN, K_SPACE, K_ESCAPE
+from pygame.image import load
+from pygame.display import update, set_mode, set_caption
+from pygame.time import Clock
+
 WIN_HEIGHT = 450
 WIN_WIDHT = 640
 
