@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import pygame
 import random
-from pygame import *
+from pygame.sprite import Sprite
+from pygame import Surface
+from pygame.image import load
 
 SPEED = 7
 WIDTH = 50
