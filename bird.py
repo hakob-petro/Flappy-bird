@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import pygame
-import pyganim
-from pygame import *
+from pygame.sprite import Sprite
+from pygame import Surface
+from pygame.time import Clock
+from pyganim import PygAnimation
+#from pygame.image import load
 
 SPEED = 0
 JUMP = 10
