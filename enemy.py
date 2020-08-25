@@ -8,12 +8,12 @@ from pygame.image import load
 
 SPEED = 7
 
-class Enemy():
+class Enemy(Sprite):
     def __init__(self, x):
-        pygame.sprite.Sprite.__init__(self)
+        Sprite.__init__(self)
         self.x = x
         self.y = random.randrange(0, 450)
-        self.image = pygame.image.load("bird/enemy_1.png")
+        self.image = load("bird/enemy_1.png")
         self.rect = self.image.get_rect()
         self.rect.x = self.x
         self.rect.y = self.y
