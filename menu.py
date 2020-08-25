@@ -20,23 +20,23 @@ HEIGHT = 40
 
 class Menu():
     def __init__(self):
-        self.font = pygame.font.Font(None, 50)
+        self.font = Font(None, 50)
         self.output = ["MAIN menu", "PRESS Space or CLICK with Mouse to PLAY", "PRESS ESC or CLICK with Mouse to QUIT"] 
 
         
     def main(self, window, screen, image_1, image_2):
         done = True
         progamm_done = True
-        btnGroup = pygame.sprite.Group()
+        btnGroup = Group()
         btn_1 = Button(X_1, Y_1, WIDTH_1, HEIGHT, text_size = 34, text = self.output[1])
         btn_2 = Button(X_2, Y_2, WIDTH_2, HEIGHT, text_size = 34, text = self.output[2])
         btnGroup.add(btn_1)
         btnGroup.add(btn_2)
-        self.image_1 = pygame.image.load(image_1)
-        self.image_2 = pygame.image.load(image_2)
+        self.image_1 = load(image_1)
+        self.image_2 = load(image_2)
         while done and progamm_done:
-            for e in pygame.event.get():
-                if e.type == pygame.QUIT:
+            for e in event.get():
+                if e.type == QUIT:
                     progamm_done = False
                 if e.type == KEYDOWN and e.key == K_SPACE:
                     done = False
@@ -46,7 +46,7 @@ class Menu():
             screen.blit(self.image_1, (0,0))
             screen.blit(self.image_2, (190, 300))
             
-            if pygame.mouse.get_pressed() == (1, 0, 0):
+            if mouse.get_pressed() == (1, 0, 0):
                 mouse_click = True
             else:
                 mouse_click = False
@@ -62,5 +62,5 @@ class Menu():
 
             screen.blit(self.font.render(self.output[0], 1, (255, 255, 255)), (220, 100))
             window.blit(screen, (0, 0))
-            pygame.display.update()
+            update()
         return progamm_done
