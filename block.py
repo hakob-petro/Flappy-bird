@@ -6,21 +6,22 @@ from pygame.sprite import Sprite
 from pygame import Surface
 from pygame.image import load
 
+
 SPEED = 7
 WIDTH = 50
 
 
-class Block(pygame.sprite.Sprite):
+class Block(Sprite):
     def __init__(self, x):
-        pygame.sprite.Sprite.__init__(self)
+        Sprite.__init__(self)
         self.x = x
         self.y_first = 0
         self.N1 = random.randint(0, 80)
-        self.image = pygame.image.load("bird/pipe_1.png")
-        self.rect_1= self.image.get_rect()
+        self.image = load("bird/pipe_1.png")
+        self.rect_1 = self.image.get_rect()
         self.rect_1.x = x
         self.rect_1.y = - self.N1
-        self.image_down = pygame.image.load("bird/pipe_2.png")
+        self.image_down = load("bird/pipe_2.png")
         self.rect_2 = self.image.get_rect()
         self.rect_2.x = x
         self.rect_2.y = 340-self.N1
