@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
-from bird import *
+from bird import Bird
+#from bird import *
 from block import *
 from menu import *
 from background import *
@@ -104,7 +104,8 @@ def main():
     print(best_score)
     mainmenu = Menu()
     while mainmenu.main(window, screen, "bird/menu.png", "bird/patterns/skeleton/skeleton-animation_00.png") and level(window, screen):
-        mainmenu = Menu()
+        pass
+        #mainmenu = Menu()
     fin.close()
     fout = open("score.txt", "w")
     fout.write(str(best_score))
