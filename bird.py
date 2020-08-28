@@ -4,9 +4,9 @@
 
 from pygame.sprite import Sprite
 from pygame import Surface
+from pygame.image import load
 from pygame.time import Clock
 from pyganim import PygAnimation
-#from pygame.image import load
 
 
 SPEED = 0
@@ -29,15 +29,14 @@ ANIMATION = ["bird/skeleton-animation_00.png",
 class Bird(Sprite):
     def __init__(self, xpos, ypos, image):
         Sprite.__init__(self)
-        self.x = xpos
-        self.y = ypos
         self.yvel = 0
         self.up = False
         self.wasup = False
         self.end = False
         self.score = 0
-        self.image = Surface((53, 30))
-        #self.image = load(image)
+        x = load("bird/skeleton-animation_00.png")
+        h, w = x.get_size()
+        self.image = Surface((h, w))
         self.rect = self.image.get_rect()
         self.rect.x = xpos
         self.rect.y = ypos
@@ -51,7 +50,7 @@ class Bird(Sprite):
         
 
     def draw(self, screen):
-        screen.blit(self.image, (self.x, self.y))
+        screen.blit(self.image, (self.rect.x, self.rect.y))
 
     def update(self):
         timer = Clock()
@@ -67,11 +66,9 @@ class Bird(Sprite):
         else:
             self.wasup = False
         #pygame.time.delay(30)
-        self.y += self.yvel
-        self.rect.y = self.y
-        self.x += SPEED
-        self.rect.x = self.x
-        if (self.y < 0):
-            self.y = 0
-        if self.y >= 400:
+        self.rect.y += self.yvel
+        self.rect.x += SPEED
+        if (self.rect.y < 0):
+            self.rect.y = 0
+        if self.rect.y >= 400:
             self.end = True
