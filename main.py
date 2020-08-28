@@ -8,33 +8,66 @@ from menu import *
 from background import *
 from enemy import *
 
-from pygame.sprite import Group, Sprite
+from pygame.sprite import Sprite, Group
 from pygame.font import Font
 from pygame import Surface, event, mouse, mixer
 from pygame import QUIT, KEYDOWN, K_SPACE, K_ESCAPE
 from pygame.image import load
 from pygame.display import update, set_mode, set_caption
 from pygame.time import Clock
+from enum import IntEnum
+import random
 
 WIN_HEIGHT = 450
 WIN_WIDHT = 640
+
+class directions(IntEnum):
+    up = 0
+    down = 1
+    right = 2
+    left = 3
 
 def level(window, screen):
     global best_score
     score_font = Font("fonts/freesansbold.ttf", 50)
     scores_screen = Surface((640, 50))
     done = True
-    hero = Bird(80, 120, "bird/red_bird_patern.png") #FlappyBird_1.png")
+    hero = Bird(80, 120, "bird/red_bird_patern.png")
     timer = Clock()
-    b = list()
-    b_len = 4
-    b_first = 0
-    b.append(Block(640))
-    b.append(Block(840))
-    b.append(Block(1040))
-    b.append(Enemy(1290))
-    hero.up = True
 
+    #initial list of seeds
+    seed = list()
+    seed_len = 3
+    seed_first = 0
+    for i in range(3):
+        seed.append(random.randint(0, 50))
+        
+    """
+    #initial list of obstacles
+    b = list()
+    b_len = 7
+    b_first = 0
+    b.append(Block(640, directions.up, seed[0]))
+    b.append(Block(640, directions.down, seed[0]))
+    b.append(Block(840, directions.up, seed[1]))
+    b.append(Block(840, directions.down, seed[1]))
+    b.append(Block(1040, directions.up, seed[2]))
+    b.append(Block(1040, directions.down, seed[2]))
+    b.append(Enemy(1290))
+    hero.up = True    
+    """
+
+    #initialing Group of obstacles
+    obgroup = Group()
+    obgroup.add(Block(640, directions.up, seed[0]))
+    obgroup.add(Block(640, directions.down, seed[0]))
+    obgroup.add(Block(840, directions.up, seed[1]))
+    obgroup.add(Block(840, directions.down, seed[1]))
+    obgroup.add(Block(1040, directions.up, seed[2]))
+    obgroup.add(Block(1040, directions.down, seed[2]))
+    obgroup.add(Enemy(1240))
+
+    
     #music
     mixer.init()
     mixer.pre_init(44100, -16, 1, 600)
@@ -53,24 +86,49 @@ def level(window, screen):
                 hero.end = True
                 done = False
                 
-        #screen.fill((120, 150, 255))
-        #ground = load("bird/ground.png")
-        #screen.blit(ground, (0, 430))
         picture = Background("bird/background_2.png", (0,0))
         picture.draw(screen)
         scores_screen.fill((50, 50, 50))
         hero.update()
+        
+        drinks = obgroup.sprites()
+        for pepsi in drinks:
+            pepsi.per(hero)
+        obgroup.update(hero)
+        obgroup.draw(screen)
+        coca_cola = drinks[0]
+
+        if coca_cola.rect.x + 50 < 0:
+            if isinstance(coca_cola, Block):
+                seed[seed_first] = random.randint(0,50)
+                obgroup.add(Block(coca_cola.rect.x + 800, directions.up, seed[seed_first]))
+                obgroup.add(Block(coca_cola.rect.x + 800, directions.down, seed[seed_first]))
+                drinks[0].kill()
+                drinks[1].kill()
+                
+            elif isinstance(coca_cola, Enemy):
+                obgroup.add(Enemy(coca_cola.rect.x + 800))
+                coca_cola.kill()
+
+        """
         for barrier in b:
             barrier.per(hero)
             barrier.update(hero)
             barrier.draw(screen)
-        if b[b_first].x + 50 < 0:
-            if b_first != 3:
-                b[b_first] = Block(b[b_first - 1].x + 200) 
-            elif b_first == 3:
-                b[b_first] = Enemy(b[b_first - 1].x + 200)
-            b_first = (b_first + 1) % b_len   
-
+        
+        if b[b_first].rect.x + 50 < 0:
+            if b_first != 6:
+                seed[seed_first] = random.randint(0,50)
+                b[b_first] = Block(b[b_first - 1].rect.x + 200, directions.up, seed[seed_first])
+                b[b_first+1] = Block(b[b_first - 1].rect.x + 200, directions.down, seed[seed_first])
+                b_first += 1
+            elif b_first == 6:
+                b[b_first] = Enemy(b[b_first - 1].rect.x + 200)
+                
+            b_first = (b_first + 1) % b_len
+            seed_first = (seed_first + 1) % seed_len
+        """
+        
         hero.draw(screen)
         scores_screen.blit(score_font.render(str(hero.score) + "  Best score: " + str(best_score), 1, (255, 255, 255)), (0, 0))
         window.blit(screen, (0, 50))
@@ -105,7 +163,6 @@ def main():
     mainmenu = Menu()
     while mainmenu.main(window, screen, "bird/menu.png", "bird/patterns/skeleton/skeleton-animation_00.png") and level(window, screen):
         pass
-        #mainmenu = Menu()
     fin.close()
     fout = open("score.txt", "w")
     fout.write(str(best_score))
