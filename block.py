@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import random
-from pygame.sprite import Sprite
+from pygame.sprite import Sprite, spritecollideany, Group
 from pygame import Surface
 from pygame.image import load
 
@@ -16,13 +16,13 @@ class Block(Sprite):
         random.seed(seed)
         self.N1 = random.randint(0, 80)
         self.direction = direction
-        if direction == 0:
+        if direction.name == "up":
             self.image = load("bird/pipe_1.png")
             self.rect = self.image.get_rect()
             self.rect = self.image.get_rect()
             self.rect.x = x
             self.rect.y = - self.N1
-        elif direction == 1:
+        elif direction.name == "down":
             self.image = load("bird/pipe_2.png")
             self.rect = self.image.get_rect()
             self.rect.x = x
@@ -41,8 +41,10 @@ class Block(Sprite):
             self.rect.x -= SPEED
         
     def per(self, bird):
-        col = self.rect.colliderect(bird)
-        if col:
+        group = Group()
+        group.add(bird)                      
+        col = spritecollideany(self, group)
+        if col is not None:
             bird.end = True
         if bird.rect.x > self.rect.x + WIDTH and not self.was and self.direction == 0:
             bird.score += 1
