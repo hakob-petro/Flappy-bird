@@ -8,6 +8,7 @@ from pygame import Surface, font
 
 COLOR = [150, 150, 150]
 
+
 font.init()
 
 class Button(Sprite):

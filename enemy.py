@@ -33,9 +33,6 @@ class Enemy(Sprite):
                 
 
     def per(self, bird):
-        col = self.rect.colliderect(bird)
-        if col:
-            bird.end = True
         if bird.rect.x > self.rect.x + self.width_enemy and not self.was:
             bird.score += 1
             self.was = True       

@@ -8,7 +8,7 @@ from menu import *
 from background import *
 from enemy import *
 
-from pygame.sprite import Sprite, Group
+from pygame.sprite import Sprite, Group, spritecollideany
 from pygame.font import Font
 from pygame import Surface, event, mouse, mixer
 from pygame import QUIT, KEYDOWN, K_SPACE, K_ESCAPE
@@ -42,20 +42,7 @@ def level(window, screen):
     for i in range(3):
         seed.append(random.randint(0, 50))
         
-    """
-    #initial list of obstacles
-    b = list()
-    b_len = 7
-    b_first = 0
-    b.append(Block(640, directions.up, seed[0]))
-    b.append(Block(640, directions.down, seed[0]))
-    b.append(Block(840, directions.up, seed[1]))
-    b.append(Block(840, directions.down, seed[1]))
-    b.append(Block(1040, directions.up, seed[2]))
-    b.append(Block(1040, directions.down, seed[2]))
-    b.append(Enemy(1290))
-    hero.up = True    
-    """
+
 
     #initialing Group of obstacles
     obgroup = Group()
@@ -90,6 +77,10 @@ def level(window, screen):
         picture.draw(screen)
         scores_screen.fill((50, 50, 50))
         hero.update()
+
+        col = spritecollideany(hero, obgroup)
+        if col is not None:
+            hero.end = True
         
         drinks = obgroup.sprites()
         for pepsi in drinks:
@@ -109,25 +100,6 @@ def level(window, screen):
             elif isinstance(coca_cola, Enemy):
                 obgroup.add(Enemy(coca_cola.rect.x + 800))
                 coca_cola.kill()
-
-        """
-        for barrier in b:
-            barrier.per(hero)
-            barrier.update(hero)
-            barrier.draw(screen)
-        
-        if b[b_first].rect.x + 50 < 0:
-            if b_first != 6:
-                seed[seed_first] = random.randint(0,50)
-                b[b_first] = Block(b[b_first - 1].rect.x + 200, directions.up, seed[seed_first])
-                b[b_first+1] = Block(b[b_first - 1].rect.x + 200, directions.down, seed[seed_first])
-                b_first += 1
-            elif b_first == 6:
-                b[b_first] = Enemy(b[b_first - 1].rect.x + 200)
-                
-            b_first = (b_first + 1) % b_len
-            seed_first = (seed_first + 1) % seed_len
-        """
         
         hero.draw(screen)
         scores_screen.blit(score_font.render(str(hero.score) + "  Best score: " + str(best_score), 1, (255, 255, 255)), (0, 0))

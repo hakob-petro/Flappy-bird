@@ -2,13 +2,14 @@
 # -*- coding: utf-8 -*-
 
 import random
-from pygame.sprite import Sprite, spritecollideany, Group
+from pygame.sprite import Sprite, Group
 from pygame import Surface
 from pygame.image import load
 
 
 SPEED = 7
 WIDTH = 50
+
 
 class Block(Sprite):
     def __init__(self, x, direction, seed):
@@ -41,13 +42,10 @@ class Block(Sprite):
             self.rect.x -= SPEED
         
     def per(self, bird):
-        group = Group()
-        group.add(bird)                      
-        col = spritecollideany(self, group)
-        if col is not None:
-            bird.end = True
         if bird.rect.x > self.rect.x + WIDTH and not self.was and self.direction == 0:
             bird.score += 1
-            self.was = True
+            self.was = True                      
+        
+        
         
         
