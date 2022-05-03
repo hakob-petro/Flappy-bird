@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# Third-party modules
 from pygame.sprite import Sprite
 from pygame.image import load
-from pygame import Surface
+
 
 class Background(Sprite):
     def __init__(self, image_file, location):
@@ -12,7 +13,6 @@ class Background(Sprite):
         self.rect = self.image.get_rect()
         self.rect.left, self.rect.top = location
         self.location = location
-        
+
     def draw(self, screen):
-            screen.blit(self.image, self.location)
-            
+        screen.blit(self.image, self.location)
