@@ -61,14 +61,13 @@ class Menu:
             else:
                 mouse_click = False
 
-            # Show buttons
             btn_group.update()
             btn_group.draw(screen)
 
             if btn_1.on_click(mouse_click):
                 done = False
             elif btn_2.on_click(mouse_click):
-                programm_done = False
+                progamm_done = False
 
             screen.blit(self.font.render(self.output[0], 1, (255, 255, 255)), (220, 100))
             window.blit(screen, (0, 0))

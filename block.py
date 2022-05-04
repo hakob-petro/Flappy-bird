@@ -42,9 +42,9 @@ class Block(Sprite):
         elif self.direction == 1:
             screen.blit(self.image, (self.rect.x, self.rect.y))
 
-    def update(self, bird):
-        if not bird.end:
-            self.rect.x -= SPEED
+    def update(self):
+        # if not bird.end:
+        self.rect.x -= SPEED
 
     def per(self, bird):
         if (bird.rect.x > self.rect.x + WIDTH) and not self.was and (self.direction.name == "up"):

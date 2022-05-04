@@ -29,12 +29,12 @@ class Enemy(Sprite):
     def draw(self, screen):
         screen.blit(self.image, (self.rect.x, self.rect.y))
 
-    def update(self, bird):
-        if not bird.end:
-            self.rect.x -= SPEED
-            self.rect.y += self.direct_y
-            if self.rect.y + self.height_enemy >= 450 or self.rect.y < 0:
-                self.direct_y = -self.direct_y
+    def update(self):
+        # if not bird.end:
+        self.rect.y += self.direct_y
+        self.rect.x -= SPEED
+        if self.rect.y + self.height_enemy >= 450 or self.rect.y < 0:
+            self.direct_y = -self.direct_y
 
     def per(self, bird):
         if (bird.rect.x > self.rect.x + self.width_enemy) and not self.was:
