@@ -1,146 +1,210 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from bird import Bird
-#from bird import *
-from block import *
-from menu import *
-from background import *
-from enemy import *
-
-from pygame.sprite import Sprite, Group, spritecollideany
-from pygame.font import Font
-from pygame import Surface, event, mouse, mixer
-from pygame import QUIT, KEYDOWN, K_SPACE, K_ESCAPE
-from pygame.image import load
-from pygame.display import update, set_mode, set_caption
-from pygame.time import Clock
+# Standard modules
 from enum import Enum
 import random
+import os
+import math
+
+# Project modules
+from bird import Bird
+from block import Block
+from menu import Menu
+from background import Background
+from enemy import Enemy
+
+# Third-party modules
+import neat
+from pygame import (
+    Surface, event, mouse, mixer,
+    QUIT, KEYDOWN, K_SPACE, K_ESCAPE
+)
+from pygame.sprite import Group, spritecollideany
+from pygame.font import Font
+from pygame.display import update, set_mode, set_caption
+from pygame.time import Clock
 
 WIN_HEIGHT = 450
 WIN_WIDHT = 640
+NUM_OF_BIRDS = 15
+BEST_SCORE = 0
 
-class directions(Enum):
+
+class Directions(Enum):
     up = 0
     down = 1
     right = 2
     left = 3
 
-def level(window, screen):
-    global best_score
+
+def remove(index):
+    birds.pop(index)
+    ge.pop(index)
+    nets.pop(index)
+
+
+def distance(pos_a, pos_b):
+    dx = pos_a[0] - pos_b[0]
+    dy = pos_a[1] - pos_b[1]
+    return math.sqrt(dx ** 2 + dy ** 2)
+
+
+def eval_genomes(genomes, config):
+    global BEST_SCORE, birds, ge, nets, window, screen
+
     score_font = Font("fonts/freesansbold.ttf", 50)
     scores_screen = Surface((640, 50))
-    done = True
-    hero = Bird(80, 120, "bird/red_bird_patern.png")
+    current_score = 0
+    # TODO: compute current score
+    done = False
     timer = Clock()
 
-    #initial list of seeds
     seed = list()
-    seed_len = 3
-    seed_first = 0
     for i in range(3):
         seed.append(random.randint(0, 50))
-        
 
+    obstacles_group = Group()
+    obstacles_group.add(Block(640, Directions.up, seed[0]))
+    obstacles_group.add(Block(640, Directions.down, seed[0]))
+    obstacles_group.add(Block(840, Directions.up, seed[1]))
+    obstacles_group.add(Block(840, Directions.down, seed[1]))
+    obstacles_group.add(Block(1040, Directions.up, seed[2]))
+    obstacles_group.add(Block(1040, Directions.down, seed[2]))
+    obstacles_group.add(Enemy(1240))
 
-    #initialing Group of obstacles
-    obgroup = Group()
-    obgroup.add(Block(640, directions.up, seed[0]))
-    obgroup.add(Block(640, directions.down, seed[0]))
-    obgroup.add(Block(840, directions.up, seed[1]))
-    obgroup.add(Block(840, directions.down, seed[1]))
-    obgroup.add(Block(1040, directions.up, seed[2]))
-    obgroup.add(Block(1040, directions.down, seed[2]))
-    obgroup.add(Enemy(1240))
+    birds = []
+    ge = []
+    nets = []
 
-    
-    #music
+    for genome_id, genome in genomes:
+        birds.append(Bird(80, 120))
+        ge.append(genome)
+        net = neat.nn.FeedForwardNetwork.create(genome, config)
+        nets.append(net)
+        genome.fitness = 0
+
     mixer.init()
     mixer.pre_init(44100, -16, 1, 600)
     mixer.music.load("bird/music/music.ogg")
     mixer.music.play(-1)
-    
-    while done and not hero.end:
+
+    while not done:
         for e in event.get():
             if e.type == QUIT:
-                done = False
-            if (e.type == KEYDOWN and e.key == K_SPACE) or mouse.get_pressed() == (1, 0, 0):
-                hero.up = True
-                jump_sound = mixer.Sound("bird/music/jump.ogg")
-                jump_sound.play()
+                done = True
             if e.type == KEYDOWN and e.key == K_ESCAPE:
-                hero.end = True
-                done = False
-                
-        picture = Background("bird/background_2.png", (0,0))
-        picture.draw(screen)
+                for bird in birds:
+                    bird.end = True
+                done = True
+
+        background = Background("bird/background_2.png", (0, 0))
+        background.draw(screen)
         scores_screen.fill((50, 50, 50))
-        hero.update()
 
-        col = spritecollideany(hero, obgroup)
-        if col is not None:
-            hero.end = True
-        
-        drinks = obgroup.sprites()
-        for pepsi in drinks:
-            pepsi.per(hero)
-        obgroup.update(hero)
-        obgroup.draw(screen)
-        coca_cola = drinks[0]
+        obstacles_group.update()
+        obstacles_group.draw(screen)
+        for bird in birds:
+            bird.update()
+            bird.draw(screen)
 
-        if coca_cola.rect.x + 50 < 0:
-            if isinstance(coca_cola, Block):
-                seed[seed_first] = random.randint(0,50)
-                obgroup.add(Block(coca_cola.rect.x + 800, directions.up, seed[seed_first]))
-                obgroup.add(Block(coca_cola.rect.x + 800, directions.down, seed[seed_first]))
-                drinks[0].kill()
-                drinks[1].kill()
-                
-            elif isinstance(coca_cola, Enemy):
-                obgroup.add(Enemy(coca_cola.rect.x + 800))
-                coca_cola.kill()
-        
-        hero.draw(screen)
-        scores_screen.blit(score_font.render(str(hero.score) + "  Best score: " + str(best_score), 1, (255, 255, 255)), (0, 0))
+        if len(birds) == 0:
+            done = True
+
+        # TODO: Correct remove. After removing, the next bird after removed bird skipped and hasn't been checked!
+        for i, bird in enumerate(birds):
+            col = spritecollideany(bird, obstacles_group)
+            if col is not None or bird.end is True:
+                bird.end = True
+                ge[i].fitness -= 10
+                remove(i)
+            else:
+                ge[i].fitness += 5
+
+        obstacles = obstacles_group.sprites()
+        for bird in birds:
+            for obstacle in obstacles:
+                obstacle.per(bird)
+
+        for i, bird in enumerate(birds):
+            output = nets[i].activate((bird.rect.y,
+                                       distance((bird.rect.x, bird.rect.y),
+                                                (obstacles[0].rect.x, obstacles[0].rect.y))))
+            if output[0] > 0.5:
+                bird.up = True
+                ge[i].fitness -= 1
+
+        first_member = obstacles[0]
+        if first_member.rect.x + 50 < 0:
+            if isinstance(first_member, Block):
+                seed[0] = random.randint(0, 50)
+                obstacles_group.add(Block(first_member.rect.x + 800, Directions.up, seed[0]))
+                obstacles_group.add(Block(first_member.rect.x + 800, Directions.down, seed[0]))
+                obstacles[0].kill()
+                obstacles[1].kill()
+
+            elif isinstance(first_member, Enemy):
+                obstacles_group.add(Enemy(first_member.rect.x + 800))
+                first_member.kill()
+
+        scores_screen.blit(score_font.render(str(current_score) + "  Best score: " + str(BEST_SCORE), 1,
+                                             (255, 255, 255)), (0, 0))
         window.blit(screen, (0, 50))
         window.blit(scores_screen, (0, 0))
         update()
 
         timer.tick(35)
 
-    if hero.end:
-        mixer.music.stop()
-    if not hero.end:
-        mixer.music.play(-1)
-    
-    if best_score < hero.score:
-        best_score = hero.score
+    mixer.music.stop()
+
+    if BEST_SCORE < current_score:
+        BEST_SCORE = current_score
         win = mixer.Sound("bird/music/win.ogg")
         win.play()
-    
+
     return done
 
- 
+
 def main():
+    global window, screen
     window = set_mode((WIN_WIDHT, WIN_HEIGHT))
-    #setting caption for window
+
     set_caption("Flappy bird")
     screen = Surface((WIN_WIDHT, WIN_HEIGHT))
+
+    local_dir = os.path.dirname(__file__)
+    config_path = os.path.join(local_dir, 'config.txt')
+
     fin = open("score.txt", "r")
-    global best_score
+    global BEST_SCORE
     for i in fin:
-        best_score = int(i)
-    print(best_score)
-    mainmenu = Menu()
-    while mainmenu.main(window, screen, "bird/menu.png", "bird/patterns/skeleton/skeleton-animation_00.png") and level(window, screen):
-        pass
+        BEST_SCORE = int(i)
+
+    game_menu = Menu()
+    while game_menu.main(window, screen, "bird/menu.png", "bird/patterns/skeleton/skeleton-animation_00.png") \
+            and run(config_path) is None:
+        game_menu = Menu()
+
     fin.close()
     fout = open("score.txt", "w")
-    fout.write(str(best_score))
+    fout.write(str(BEST_SCORE))
     fout.close()
 
 
-best_score = 0
-if __name__ == "__main__":
+# Set up the NEAT Neural Network
+def run(config_path):
+    global pop
+    config = neat.config.Config(
+        neat.DefaultGenome,
+        neat.DefaultReproduction,
+        neat.DefaultSpeciesSet,
+        neat.DefaultStagnation,
+        config_path
+    )
+
+    pop = neat.Population(config)
+    pop.run(eval_genomes, 50)
+
+
+if __name__ == '__main__':
     main()
