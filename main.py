@@ -28,7 +28,8 @@ from pygame.time import Clock
 WIN_HEIGHT = 450
 WIN_WIDHT = 640
 NUM_OF_BIRDS = 15
-BEST_SCORE = 0
+best_score = 0
+generation = 0
 
 
 class Directions(Enum):
@@ -51,7 +52,10 @@ def distance(pos_a, pos_b):
 
 
 def eval_genomes(genomes, config):
-    global BEST_SCORE, birds, ge, nets, window, screen
+    global best_score, birds, obstacles_group, ge, nets, window, screen, generation
+
+    generation += 1
+    print(f"The {generation} generation of birds!")
 
     score_font = Font("fonts/freesansbold.ttf", 50)
     scores_screen = Surface((640, 50))
@@ -60,8 +64,8 @@ def eval_genomes(genomes, config):
     done = False
     timer = Clock()
 
-    seed = list()
-    for i in range(3):
+    seed = []
+    for i in range(4):
         seed.append(random.randint(0, 50))
 
     obstacles_group = Group()
@@ -71,7 +75,9 @@ def eval_genomes(genomes, config):
     obstacles_group.add(Block(840, Directions.down, seed[1]))
     obstacles_group.add(Block(1040, Directions.up, seed[2]))
     obstacles_group.add(Block(1040, Directions.down, seed[2]))
-    obstacles_group.add(Enemy(1240))
+    obstacles_group.add(Block(1240, Directions.up, seed[3]))
+    obstacles_group.add(Block(1240, Directions.down, seed[3]))
+    # obstacles_group.add(Enemy(1240))
 
     birds = []
     ge = []
@@ -129,7 +135,9 @@ def eval_genomes(genomes, config):
         for i, bird in enumerate(birds):
             output = nets[i].activate((bird.rect.y,
                                        distance((bird.rect.x, bird.rect.y),
-                                                (obstacles[0].rect.x, obstacles[0].rect.y))))
+                                                (obstacles[0].rect.x, obstacles[0].rect.y)),
+                                       obstacles[0].rect.y,
+                                       obstacles[1].rect.y))
             if output[0] > 0.5:
                 bird.up = True
                 ge[i].fitness -= 1
@@ -147,7 +155,7 @@ def eval_genomes(genomes, config):
                 obstacles_group.add(Enemy(first_member.rect.x + 800))
                 first_member.kill()
 
-        scores_screen.blit(score_font.render(str(current_score) + "  Best score: " + str(BEST_SCORE), 1,
+        scores_screen.blit(score_font.render(str(current_score) + "  Best score: " + str(best_score), 1,
                                              (255, 255, 255)), (0, 0))
         window.blit(screen, (0, 50))
         window.blit(scores_screen, (0, 0))
@@ -157,8 +165,8 @@ def eval_genomes(genomes, config):
 
     mixer.music.stop()
 
-    if BEST_SCORE < current_score:
-        BEST_SCORE = current_score
+    if best_score < current_score:
+        best_score = current_score
         win = mixer.Sound("bird/music/win.ogg")
         win.play()
 
@@ -176,9 +184,9 @@ def main():
     config_path = os.path.join(local_dir, 'config.txt')
 
     fin = open("score.txt", "r")
-    global BEST_SCORE
+    global best_score
     for i in fin:
-        BEST_SCORE = int(i)
+        best_score = int(i)
 
     game_menu = Menu()
     while game_menu.main(window, screen, "bird/menu.png", "bird/patterns/skeleton/skeleton-animation_00.png") \
@@ -187,7 +195,7 @@ def main():
 
     fin.close()
     fout = open("score.txt", "w")
-    fout.write(str(BEST_SCORE))
+    fout.write(str(best_score))
     fout.close()
 
 
