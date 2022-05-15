@@ -21,15 +21,30 @@ from pygame import (
     QUIT, KEYDOWN, K_SPACE, K_ESCAPE
 )
 from pygame.sprite import Group, spritecollideany
-from pygame.font import Font
+from pygame.font import Font, SysFont
 from pygame.display import update, set_mode, set_caption
 from pygame.time import Clock
 
 WIN_HEIGHT = 450
 WIN_WIDHT = 640
 NUM_OF_BIRDS = 15
+game_speed = 1
 best_score = 0
 generation = 0
+
+bird_names = [
+    "Պարկեշտիկ", "Կեշա", "Դեղնակտուց", "Ձկան աչք", "Պստիկ", "Ճստիկ",
+    "Նիֆնիֆ", "Նուֆնուֆ", "Նաֆնաֆ", "Ճարպիկ", "Դոկտոր",
+    "Անի", "Գիտունիկ", "Համառիկ", "Անհաջողակ", "Պիտոնչիկ, ֆսսսս",
+    "Ֆլաֆի", "Սուբարիկ", "Պոնչիկ", "Մեղրիկ"
+]
+
+bird_name_colors = [
+    "#042940", "#005C53", "#9FC131", "#DBF227", "#D6D58E",
+    "#010221", "#0A7373", "#B7BF99", "#EDAA25", "#C43302",
+    "#16232E", "#164C45", "#CC8D1A", "#E3C75F", "#BDA523",
+    "#520120", "#08403E", "#706513", "#B57114", "#962B09"
+]
 
 
 class Directions(Enum):
@@ -52,15 +67,14 @@ def distance(pos_a, pos_b):
 
 
 def eval_genomes(genomes, config):
-    global best_score, birds, obstacles_group, ge, nets, window, screen, generation
-
+    global best_score, birds, obstacles_group, ge, nets, window, screen, generation, game_speed
     generation += 1
-    print(f"The {generation} generation of birds!")
+    speed = 1
+    score_font = Font(os.path.join("fonts", "freesansbold.ttf"), 40)
+    generation_font = Font(os.path.join("fonts", "ka1.ttf"), 30)
 
-    score_font = Font("fonts/freesansbold.ttf", 50)
     scores_screen = Surface((640, 50))
     current_score = 0
-    # TODO: compute current score
     done = False
     timer = Clock()
 
@@ -83,8 +97,8 @@ def eval_genomes(genomes, config):
     ge = []
     nets = []
 
-    for genome_id, genome in genomes:
-        birds.append(Bird(80, 120))
+    for (genome_id, genome), name, color in zip(genomes, bird_names, bird_name_colors):
+        birds.append(Bird(80, 120, name, color))
         ge.append(genome)
         net = neat.nn.FeedForwardNetwork.create(genome, config)
         nets.append(net)
@@ -92,7 +106,7 @@ def eval_genomes(genomes, config):
 
     mixer.init()
     mixer.pre_init(44100, -16, 1, 600)
-    mixer.music.load("bird/music/music.ogg")
+    mixer.music.load(os.path.join("bird", "music", "music.ogg"))
     mixer.music.play(-1)
 
     while not done:
@@ -104,7 +118,7 @@ def eval_genomes(genomes, config):
                     bird.end = True
                 done = True
 
-        background = Background("bird/background_2.png", (0, 0))
+        background = Background(os.path.join("bird", "background_1.png"), (0, 0))
         background.draw(screen)
         scores_screen.fill((50, 50, 50))
 
@@ -122,10 +136,11 @@ def eval_genomes(genomes, config):
             col = spritecollideany(bird, obstacles_group)
             if col is not None or bird.end is True:
                 bird.end = True
-                ge[i].fitness -= 10
+                ge[i].fitness -= 5
                 remove(i)
+                bird.kill()
             else:
-                ge[i].fitness += 5
+                ge[i].fitness += 10
 
         obstacles = obstacles_group.sprites()
         for bird in birds:
@@ -155,13 +170,22 @@ def eval_genomes(genomes, config):
                 obstacles_group.add(Enemy(first_member.rect.x + 800))
                 first_member.kill()
 
-        scores_screen.blit(score_font.render(str(current_score) + "  Best score: " + str(best_score), 1,
-                                             (255, 255, 255)), (0, 0))
+        if len(birds) != 0:
+            current_score = birds[0].score
+        scores_screen.blit(score_font.render(str(current_score) + "  BEST: " + str(best_score), 1,
+                                             (255, 255, 255)), (0, 5))
+        scores_screen.blit(score_font.render(F"SPEED: x{speed}", 1, (255, 255, 255)), (320, 5))
+        screen.blit(generation_font.render(f"Generation: {generation}", 1, "#DEA123"), (20, 355))
+
+        # Increase the game speed
+        if current_score % 10 == 0:
+            speed = game_speed + 0.1 * (current_score / 10)
+
         window.blit(screen, (0, 50))
         window.blit(scores_screen, (0, 0))
         update()
 
-        timer.tick(35)
+        timer.tick(35*speed)
 
     mixer.music.stop()
 
@@ -189,7 +213,8 @@ def main():
         best_score = int(i)
 
     game_menu = Menu()
-    while game_menu.main(window, screen, "bird/menu.png", "bird/patterns/skeleton/skeleton-animation_00.png") \
+    while game_menu.main(window, screen, os.path.join("bird", "menu.png"),
+                         os.path.join("bird", "patterns", "skeleton", "skeleton-animation_00.png")) \
             and run(config_path) is None:
         game_menu = Menu()
 

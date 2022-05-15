@@ -1,36 +1,44 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# Standard modules
+import os
+
 # Third-party modules
 from pygame.sprite import Sprite
 from pygame import Surface
 from pygame.image import load
+from pygame.font import Font, SysFont
 from pyganim import PygAnimation
 
 SPEED = 0
 JUMP = 10
 GRAVITY = 1
 COLOR = (0, 0, 0)
-ANIMATION_DELAY = 1
+ANIMATION_DELAY = 30
+
 ANIMATION = [
-    "bird/skeleton-animation_00.png",
-    "bird/skeleton-animation_01.png",
-    "bird/skeleton-animation_02.png",
-    "bird/skeleton-animation_03.png",
-    "bird/skeleton-animation_04.png",
-    "bird/skeleton-animation_05.png",
-    "bird/skeleton-animation_06.png",
-    "bird/skeleton-animation_07.png",
-    "bird/skeleton-animation_08.png",
-    "bird/skeleton-animation_09.png",
-    "bird/skeleton-animation_10.png"
+    os.path.join("bird", "skeleton-animation_00.png"),
+    os.path.join("bird", "skeleton-animation_01.png"),
+    os.path.join("bird", "skeleton-animation_02.png"),
+    os.path.join("bird", "skeleton-animation_03.png"),
+    os.path.join("bird", "skeleton-animation_04.png"),
+    os.path.join("bird", "skeleton-animation_05.png"),
+    os.path.join("bird", "skeleton-animation_06.png"),
+    os.path.join("bird", "skeleton-animation_07.png"),
+    os.path.join("bird", "skeleton-animation_08.png"),
+    os.path.join("bird", "skeleton-animation_09.png"),
+    os.path.join("bird", "skeleton-animation_10.png")
     ]
 
 
 class Bird(Sprite):
-    def __init__(self, xpos, ypos):
+    def __init__(self, xpos, ypos, name, color):
         Sprite.__init__(self)
 
+        self.name = name
+        self.font = SysFont('Tahoma', 15, False, False)
+        self.color = color
         self.yvel = 0
         self.score = 0
         self.up = False
@@ -53,6 +61,7 @@ class Bird(Sprite):
 
     def draw(self, screen):
         screen.blit(self.image, (self.rect.x, self.rect.y))
+        screen.blit(self.font.render(f"{self.name}", 1, self.color), (self.rect.x + 7, self.rect.y - 25))
 
     def update(self):
         self.image.fill(COLOR)

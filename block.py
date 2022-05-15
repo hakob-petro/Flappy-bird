@@ -3,6 +3,7 @@
 
 # Standard modules
 import random
+import os
 
 # Third-party modules
 from pygame.sprite import Sprite
@@ -11,8 +12,8 @@ from pygame.image import load
 SPEED = 7
 WIDTH = 50
 PIPE_IMAGES = [
-    "bird/pipe_1.png",
-    "bird/pipe_2.png"
+    os.path.join("bird", "pipe_1.png"),
+    os.path.join("bird", "pipe_2.png")
 ]
 
 

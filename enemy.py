@@ -3,14 +3,16 @@
 
 # Standard modules
 import random
+import os
 
 # Third-party modules
 from pygame.sprite import Sprite
 from pygame.image import load
 
 SPEED = 7
+FLY_SPEED = 5
 Enemies = [
-    "bird/enemy_1.png"
+    os.path.join("bird", "enemy_1.png")
 ]
 
 
@@ -24,7 +26,7 @@ class Enemy(Sprite):
         self.rect.x = x
         self.rect.y = random.randrange(0, 450)
         self.width_enemy, self.height_enemy = self.image.get_size()
-        self.direct_y = random.randrange(-5, 5)
+        self.direct_y = random.randrange(-FLY_SPEED, FLY_SPEED)
 
     def draw(self, screen):
         screen.blit(self.image, (self.rect.x, self.rect.y))
