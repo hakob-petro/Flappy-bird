@@ -1,3 +1,3 @@
 # Flappy-bird
-A simple flappy bird
+A simple flappy bird  game with NeuroEvolution of Augmenting Topologies...
 
